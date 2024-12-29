@@ -2,24 +2,20 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;  // Use environment port for deployment (e.g., Vercel)
 
 app.set('view engine', 'ejs');
 app.use(express.static('public')); // Serve static files (CSS, JS)
 
-
-// TMDB API Key
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
 // Home Route: Trending Movies and Series
 app.get('/', async (req, res) => {
   try {
-    // Fetch trending content
     const trendingRes = await axios.get(
       `https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`
     );
 
-    // Filter movies and series
     const movies = trendingRes.data.results.filter(
       (item) => item.media_type === 'movie' && item.title && item.poster_path
     );
@@ -27,7 +23,7 @@ app.get('/', async (req, res) => {
       (item) => item.media_type === 'tv' && item.name && item.poster_path
     );
 
-    res.render('index', { movies, series }); // Pass data to the index view
+    res.render('index', { movies, series });
   } catch (error) {
     console.error("Error fetching trending data:", error.response?.data || error.message);
     res.render('error', { message: 'Error fetching trending data.' });
@@ -42,12 +38,10 @@ app.get('/search', async (req, res) => {
   }
 
   try {
-    // Fetch search results
     const searchRes = await axios.get(
       `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
     );
 
-    // Filter movies and series
     const movies = searchRes.data.results.filter(
       (item) => item.media_type === 'movie' && item.title && item.poster_path
     );
@@ -55,116 +49,55 @@ app.get('/search', async (req, res) => {
       (item) => item.media_type === 'tv' && item.name && item.poster_path
     );
 
-    res.render('search', { query, movies, series }); // Pass data to the search view
+    res.render('search', { query, movies, series });
   } catch (error) {
     console.error("Error during search:", error.response?.data || error.message);
     res.render('search', { query, movies: [], series: [] });
   }
 });
 
-// Movie Details Route
-app.get('/detail/movie/:id', async (req, res) => {
+// Movie and Series Details Route (Combined)
+app.get('/detail/:mediaType/:id', async (req, res) => {
+  const { mediaType, id } = req.params;
   try {
-    const { id } = req.params;
-    const response = await axios.get(`https://api.themoviedb.org/3/movie/${id}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits`);
-    const itemData = response.data;
-    
-    res.render('detail', {
-      item: itemData,
-      mediaType: 'movie',  // This should be 'movie' for movies
-    });
-  } catch (error) {
-    console.error('Error fetching movie details:', error);
-    res.status(500).send('An error occurred');
-  }
-});
+    let itemData;
 
-  
-  // Series Details Route
-  app.get('/detail/tv/:id', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const response = await axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits`);
-      const itemData = response.data;
-      
-      res.render('detail', {
-        item: itemData,
-        mediaType: 'tv',  // This should be 'tv' for series
-      });
-    } catch (error) {
-      console.error('Error fetching TV series details:', error);
-      res.status(500).send('An error occurred');
-    }
-  });
-  
-  
-// Combined Details Route for Movie and Series
-app.get('/detail/:type/:id', async (req, res) => {
-  const { type, id } = req.params;
-  try {
-    let item = null;
-
-    if (type === 'movie') {
+    if (mediaType === 'movie') {
       const movieRes = await axios.get(
-        `https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}`
+        `https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`
       );
-      item = movieRes.data;
-    } else if (type === 'series') {
+      itemData = movieRes.data;
+    } else if (mediaType === 'tv') {
       const seriesRes = await axios.get(
-        `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}`
+        `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`
       );
-      item = seriesRes.data;
+      itemData = seriesRes.data;
     } else {
       return res.render('error', { message: 'Invalid type specified.' });
     }
 
-    res.render('detail', { item, type }); // Pass item and type to detail view
+    res.render('detail', { item: itemData, mediaType });
   } catch (error) {
-    console.error(`Error fetching ${type} details:`, error.response?.data || error.message);
-    res.render('error', { message: `Error fetching ${type} details.` });
+    console.error(`Error fetching ${mediaType} details:`, error.response?.data || error.message);
+    res.render('error', { message: `Error fetching ${mediaType} details.` });
   }
 });
 
+// API Route for fetching Videos
 app.get('/api/videos/:mediaType/:id', async (req, res) => {
   const { mediaType, id } = req.params;
-  const apiKey = process.env.TMDB_API_KEY;
-
   try {
-      const response = await axios.get(`https://api.themoviedb.org/3/${mediaType}/${id}/videos?api_key=${apiKey}&language=en-US`);
-      res.json(response.data);
+    const response = await axios.get(
+      `https://api.themoviedb.org/3/${mediaType}/${id}/videos?api_key=${TMDB_API_KEY}&language=en-US`
+    );
+    res.json(response.data);
   } catch (error) {
-      console.error('Error fetching videos from TMDB:', error);
-      res.status(500).send('Error fetching videos.');
+    console.error('Error fetching videos from TMDB:', error);
+    res.status(500).send('Error fetching videos.');
   }
 });
 
-app.get('/detail/:mediaType/:id', async (req, res) => {
-  const mediaType = req.params.mediaType;  // 'movie' or 'tv'
-  const id = req.params.id;
-  
-  try {
-      let itemData;
-      
-      if (mediaType === 'movie') {
-          itemData = await fetchMovieDetails(id);  // Adjust based on how you're fetching movie details
-      } else if (mediaType === 'tv') {
-          itemData = await fetchTVDetails(id);  // Adjust based on how you're fetching TV details
-      }
-
-      res.render('detail', {
-          item: itemData,
-          mediaType: mediaType,  // Ensure that 'mediaType' is passed as 'movie' or 'tv'
-      });
-
-  } catch (error) {
-      console.error(error);
-      res.status(500).send('Error fetching details');
-  }
-});
-
-
-
-// Error Page
+// Error Page Route
 app.get('/error', (req, res) => {
   res.render('error', { message: 'An unknown error occurred.' });
 });
