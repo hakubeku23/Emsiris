@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Emsiris</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1>
+        <a href="/" class="logo focusable">
+          <img src="/assets/logo.png" alt="Emsiris Logo">
+        </a>
+      </h1>     
+  <form action="/search" method="GET">
+    <input class="focusable" type="text" name="query" placeholder="Search...">
+    <button class="focusable" type="submit">Search</button>
+  </form>
+
+  <h1>Trending Now</h1>
+
+  <h2>Movies</h2>
+  <div class="results">
+    <% if (movies && movies.length > 0) { %>
+      <% movies.forEach(movie => { %>
+        <div>
+          <a href="/detail/movie/<%= movie.id %>" class="focusable">
+            <img src="https://image.tmdb.org/t/p/w200/<%= movie.poster_path %>" alt="<%= movie.title %>">
+            <p><%= movie.title %></p>
+          </a>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <p>No trending movies found.</p>
+    <% } %>
+  </div>
+
+  <h2>Series</h2>
+  <div class="results">
+    <% if (series && series.length > 0) { %>
+      <% series.forEach(series => { %>
+        <% if (series.poster_path) { %>
+          <a href="/detail/series/<%= series.id %>" class="focusable">
+            <img src="https://image.tmdb.org/t/p/w200/<%= series.poster_path %>" alt="<%= series.name %>">
+            <p><%= series.name %></p>
+          </a>
+        <% } %>
+      <% }); %>
+    <% } else { %>
+      <p>No trending TV series found.</p>
+    <% } %>
+  </div>
+
+  <script src="/js/nav_controller.js"></script>
+</body>
+</html>

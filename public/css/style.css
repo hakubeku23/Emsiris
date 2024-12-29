@@ -1,0 +1,258 @@
+/* public/style.css */
+
+body {
+    background-color: #111; /* Dark background */
+    color: #eee; /* Light text */
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+h1, h2 {
+    color: #fff;
+}
+
+.search-container {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: none;
+    background-color: #333;
+    color: #eee;
+    font-size: 16px;
+    border-radius: 5px 0 0 5px; /* Rounded left corners */
+
+}
+
+button[type="submit"] {
+    padding: 10px 20px;
+    border: none;
+    background-color: #e50914; /* Netflix red */
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 0 5px 5px 0; /* Rounded right corners */
+
+}
+
+.results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 200px)); /* Larger posters */
+    grid-gap: 20px;
+}
+
+.results a {
+    position: relative; /* Needed for absolute positioning of the image */
+    padding-bottom: 150%; /* Set aspect ratio (height/width * 100). 150% is 3:2, adjust as needed */
+    display: block;
+    overflow: hidden; /* Hide any overflowing image content */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.results a:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.results img {
+    position: absolute; /* Position image inside the container */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.results a:hover img {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Stronger shadow on hover */
+
+}
+
+.results p {
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Detail page styles */
+.detail-container {
+    display: flex;
+    gap: 20px;
+}
+.detail-container img {
+    max-width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.detail-info {
+    flex-grow: 1;
+}
+
+.detail-info p {
+    line-height: 1.6;
+}
+
+.detail-info h1 {
+    margin-bottom: 10px;
+}
+/* Error page style */
+.error-message {
+    text-align: center;
+    color: red;
+    font-size: 1.2em;
+    margin-top: 20px;
+}
+/* Media Query for smaller screens (like mobile) */
+@media (max-width: 768px) {
+    .results {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Smaller posters on mobile */
+    }
+    .detail-container {
+        flex-direction: column; /* Stack image and info vertically */
+        align-items: center;
+    }
+    .detail-container img {
+        max-width: 90%;
+    }
+}
+
+.detail-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px; /* Add padding around the container */
+    background-color: #222; /* Slightly darker background */
+    border-radius: 8px; /* Rounded corners for the container */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+}
+
+.detail-container img {
+    max-width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.detail-info {
+    flex-grow: 1;
+    color: #eee;
+}
+
+.detail-info h1 {
+    margin-bottom: 10px;
+    font-size: 2em;
+}
+
+.detail-info p {
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.detail-info .overview {
+    font-style: italic;
+}
+
+.detail-info .genres,
+.detail-info .directors,
+.detail-info .cast {
+    font-weight: bold;
+}
+
+.detail-info .year, .detail-info .rating, .detail-info .duration{
+    font-style: italic;
+    color: #aaa;
+}
+@media (max-width: 768px) {
+    .detail-container {
+        flex-direction: column;
+    }
+    .detail-container img {
+        max-width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+.checked {
+    color: orange;
+  }
+
+  .logo img {
+    max-height: 80px; /* Adjust the height as needed */
+    width: auto;      /* Maintain aspect ratio */
+    display: block;   /* Remove any inline spacing issues */
+  }
+  
+  .logo {
+    text-decoration: none; /* Ensure no underline */
+  }
+  
+  .logo img:hover {
+    transform: scale(1.05); /* Slight zoom */
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .back-button {
+    background-color: #e50914;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .back-button:hover {
+    background-color: #cc0912;
+  }
+  
+  .trailer-button {
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.trailer-button:hover {
+    background-color: #cc0000;
+}
+
+.play-button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.play-button:hover {
+    background-color: #0056b3;
+}
+
+/* Add border to focusable elements when focused */
+.focusable:focus {
+    outline: none; /* Remove default outline */
+    border: 2px solid #ff6600; /* Add custom border */
+    transform: scale(1.05); /* Slight zoom */
+    transition: transform 0.2s ease-in-out;
+    
+}
+

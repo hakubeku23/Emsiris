@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Search Results for <%= query %></title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="/node_modules/keynav/dist/keynav.min.js"></script>
+</head>
+<body>
+    <h1>
+        <a href="/" class="logo focusable">
+          <img src="/assets/logo.png" alt="Emsiris Logo">
+        </a>
+      </h1>
+    <form action="/search" method="GET">
+        <input class="focusable" type="text" name="query" placeholder="Search...">
+        <button class="focusable" type="submit">Search</button>
+      </form>
+  <h1>Search Results for <%= query %></h1>
+
+  <h2>Movies</h2>
+  <div class="results">
+    <% movies.forEach(movie => { %>
+      <a href="/detail/movie/<%= movie.id %>" class="focusable">
+        <img src="https://image.tmdb.org/t/p/w200/<%= movie.poster_path %>" alt="<%= movie.title %>">
+        <p><%= movie.title %></p>
+      </a>
+    <% }); %>
+  </div>
+
+  <h2>TV Series</h2>
+<div class="results">
+  <% series.forEach(series => { %>  
+    <a href="/detail/series/<%= series.id %>" class="focusable">
+      <img src="https://image.tmdb.org/t/p/w200/<%= series.poster_path %>" alt="<%= series.name %>">
+      <p><%= series.name %></p>
+    </a>
+  <% }); %>
+</div>
+
+<script src="/js/nav_controller.js"></script>
+
+</body>
+</html>
