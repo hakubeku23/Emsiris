@@ -62,38 +62,33 @@ app.get('/detail/:mediaType/:id', async (req, res) => {
   try {
     let itemData;
 
+    // Log request parameters to check
+    console.log(`Fetching details for: ${mediaType} with ID: ${id}`);
+
     if (mediaType === 'movie') {
       const movieRes = await axios.get(
         `https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`
       );
       itemData = movieRes.data;
+      console.log("Movie Data:", itemData); // Log movie data for debugging
     } else if (mediaType === 'tv') {
       const seriesRes = await axios.get(
         `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`
       );
       itemData = seriesRes.data;
+      console.log("TV Series Data:", itemData); // Log series data for debugging
     } else {
       return res.render('error', { message: 'Invalid type specified.' });
+    }
+
+    if (!itemData) {
+      return res.render('error', { message: `No data found for ${mediaType}.` });
     }
 
     res.render('detail', { item: itemData, mediaType });
   } catch (error) {
     console.error(`Error fetching ${mediaType} details:`, error.response?.data || error.message);
     res.render('error', { message: `Error fetching ${mediaType} details.` });
-  }
-});
-
-// API Route for fetching Videos
-app.get('/api/videos/:mediaType/:id', async (req, res) => {
-  const { mediaType, id } = req.params;
-  try {
-    const response = await axios.get(
-      `https://api.themoviedb.org/3/${mediaType}/${id}/videos?api_key=${TMDB_API_KEY}&language=en-US`
-    );
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error fetching videos from TMDB:', error);
-    res.status(500).send('Error fetching videos.');
   }
 });
 
