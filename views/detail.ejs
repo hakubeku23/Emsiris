@@ -29,50 +29,28 @@
     </div>    
     </h1>
 
-    <div class="detail-container">
-        <!-- Handle Missing Poster -->
-        <img src="https://image.tmdb.org/t/p/w500/<%= item.poster_path || 'placeholder_image_path.jpg' %>" alt="<%= item.title || item.name || 'No title' %>" class="focusable">
-        <div class="detail-info">
-            <!-- Handle Movie and TV Dates -->
-            <h1><%= item.title || item.name %> (<%= (item.release_date || item.first_air_date || '').substring(0, 4) %>)</h1>
-
-            <% if (item.runtime) { %><p class="duration"><%= item.runtime %> min</p><% } %>
-            <% if (item.vote_average) { %><p class="rating">IMDb <span class="fa fa-star checked"></span> <%= item.vote_average %></p><% } %>
-
-            <% if (item.genres) { %>
-                <p class="genres">Genres: <% item.genres.forEach((genre, index) => { %>
-                    <%= genre.name %><% if (index < item.genres.length - 1) { %>, <% } %>
-                <% }); %></p>
-            <% } %>
-
-            <p class="overview"><%= item.overview || 'No overview available.' %></p>
-
-            <!-- Crew Information -->
-            <% if (item.credits && item.credits.crew && item.credits.crew.length > 0) { %>
-                <div class="crew-info">
-                    <% const directors = item.credits.crew.filter(person => person.job === 'Director'); %>
-                    <% if (directors.length > 0) { %>
-                        <p class="directors">Director(s): <% directors.forEach((director, index) => { %>
-                            <%= director.name %><% if (index < directors.length - 1) { %>, <% } %>
-                        <% }); %></p>
-                    <% } %>
-                </div>
-            <% } %>
-
-            <!-- Cast Information -->
-            <% if (item.credits && item.credits.cast && item.credits.cast.length > 0) { %>
-                <div class="cast-info">
-                    <p class="cast">Cast: <% item.credits.cast.slice(0, 10).forEach((actor, index) => { %>
-                        <%= actor.name %><% if (index < 9 && index < item.credits.cast.length - 1) { %>, <% } %>
-                    <% }); %></p>
-                </div>
-            <% } %>
-
-            <!-- Trailer and Play Buttons -->
-            <button id="trailer-button" class="trailer-button focusable">Watch Trailer</button>
-            <button id="play-button" class="play-button focusable">Play</button>
-        </div>
+      <div class="detail-container">
+    <img src="https://image.tmdb.org/t/p/w500/<%= item.poster_path || 'placeholder.jpg' %>" alt="<%= item.title || item.name || 'No title' %>" class="focusable">
+    <div class="detail-info">
+      <h1><%= item.title || item.name %> (<%= (item.release_date || item.first_air_date || '').substring(0, 4) %>)</h1>
+      <% if (item.runtime) { %><p><%= item.runtime %> min</p><% } %>
+      <% if (item.vote_average) { %><p>IMDb <span class="fa fa-star"></span> <%= item.vote_average %></p><% } %>
+      <% if (item.genres) { %>
+        <p>Genres: <%= item.genres.map(g => g.name).join(', ') %></p>
+      <% } %>
+      <p><%= item.overview || 'No overview available.' %></p>
+      <% const directors = item.credits?.crew?.filter(c => c.job === 'Director') || []; %>
+      <% if (directors.length) { %>
+        <p>Director(s): <%= directors.map(d => d.name).join(', ') %></p>
+      <% } %>
+      <% const cast = item.credits?.cast?.slice(0, 10) || []; %>
+      <% if (cast.length) { %>
+        <p>Cast: <%= cast.map(a => a.name).join(', ') %></p>
+      <% } %>
+      <button id="trailer-button" class="focusable">Watch Trailer</button>
+      <button id="play-button" class="focusable">Play</button>
     </div>
+  </div>
 
     <script>
         document.getElementById('trailer-button').addEventListener('click', async () => {
