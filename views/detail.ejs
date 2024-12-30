@@ -30,19 +30,25 @@
     </h1>
 
     <div class="detail-container">
-        <img src="https://image.tmdb.org/t/p/w500/<%= item.poster_path %>" alt="<%= item.title || item.name %>" class="focusable">
+        <!-- Handle Missing Poster -->
+        <img src="https://image.tmdb.org/t/p/w500/<%= item.poster_path || 'placeholder_image_path.jpg' %>" alt="<%= item.title || item.name || 'No title' %>" class="focusable">
         <div class="detail-info">
+            <!-- Handle Movie and TV Dates -->
             <h1><%= item.title || item.name %> (<%= (item.release_date || item.first_air_date || '').substring(0, 4) %>)</h1>
+
             <% if (item.runtime) { %><p class="duration"><%= item.runtime %> min</p><% } %>
             <% if (item.vote_average) { %><p class="rating">IMDb <span class="fa fa-star checked"></span> <%= item.vote_average %></p><% } %>
+
             <% if (item.genres) { %>
                 <p class="genres">Genres: <% item.genres.forEach((genre, index) => { %>
                     <%= genre.name %><% if (index < item.genres.length - 1) { %>, <% } %>
                 <% }); %></p>
             <% } %>
-            <p class="overview"><%= item.overview %></p>
 
-            <% if (item.credits && item.credits.crew) { %>
+            <p class="overview"><%= item.overview || 'No overview available.' %></p>
+
+            <!-- Crew Information -->
+            <% if (item.credits && item.credits.crew && item.credits.crew.length > 0) { %>
                 <div class="crew-info">
                     <% const directors = item.credits.crew.filter(person => person.job === 'Director'); %>
                     <% if (directors.length > 0) { %>
@@ -52,17 +58,18 @@
                     <% } %>
                 </div>
             <% } %>
-            <% if (item.credits && item.credits.cast) { %>
+
+            <!-- Cast Information -->
+            <% if (item.credits && item.credits.cast && item.credits.cast.length > 0) { %>
                 <div class="cast-info">
                     <p class="cast">Cast: <% item.credits.cast.slice(0, 10).forEach((actor, index) => { %>
-                        <%= actor.name %><% if (index < 9 && index < item.credits.cast.length -1) { %>, <% } %>
+                        <%= actor.name %><% if (index < 9 && index < item.credits.cast.length - 1) { %>, <% } %>
                     <% }); %></p>
                 </div>
             <% } %>
-            
-            <!-- Trailer Button -->
+
+            <!-- Trailer and Play Buttons -->
             <button id="trailer-button" class="trailer-button focusable">Watch Trailer</button>
-            <!-- Play Button -->
             <button id="play-button" class="play-button focusable">Play</button>
         </div>
     </div>
