@@ -2,7 +2,12 @@
 <html>
 <head>
     <title><%= item.title || item.name %></title>
-    <link rel="stylesheet" href="/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -30,17 +35,29 @@
     </h1>
 
     <div class="detail-container">
-        <img src="https://image.tmdb.org/t/p/w500/<%= item.poster_path %>" alt="<%= item.title || item.name %>" class="focusable">
+        <% if (item && item.poster_path) { %>
+            <img src="https://image.tmdb.org/t/p/w500/<%= item.poster_path %>" alt="<%= item.title || item.name %>" class="focusable">
+        <% } else { %>
+            <p>Poster not available</p>
+        <% } %>
+
         <div class="detail-info">
-            <h1><%= item.title || item.name %> (<%= (item.release_date || item.first_air_date || '').substring(0, 4) %>)</h1>
-            <% if (item.runtime) { %><p class="duration"><%= item.runtime %> min</p><% } %>
-            <% if (item.vote_average) { %><p class="rating">IMDb <span class="fa fa-star checked"></span> <%= item.vote_average %></p><% } %>
-            <% if (item.genres) { %>
+            <h1><%= item.title || item.name || 'No title available' %> 
+                (<%= (item.release_date || item.first_air_date || 'Unknown').substring(0, 4) %>)
+            </h1>
+            
+            <% if (item.runtime) { %>
+                <p class="duration"><%= item.runtime %> min</p>
+            <% } %>
+            <% if (item.vote_average) { %>
+                <p class="rating">IMDb <span class="fa fa-star checked"></span> <%= item.vote_average %></p>
+            <% } %>
+            <% if (item.genres && item.genres.length > 0) { %>
                 <p class="genres">Genres: <% item.genres.forEach((genre, index) => { %>
                     <%= genre.name %><% if (index < item.genres.length - 1) { %>, <% } %>
                 <% }); %></p>
             <% } %>
-            <p class="overview"><%= item.overview %></p>
+            <p class="overview"><%= item.overview || 'No overview available' %></p>
 
             <% if (item.credits && item.credits.crew) { %>
                 <div class="crew-info">
@@ -55,7 +72,7 @@
             <% if (item.credits && item.credits.cast) { %>
                 <div class="cast-info">
                     <p class="cast">Cast: <% item.credits.cast.slice(0, 10).forEach((actor, index) => { %>
-                        <%= actor.name %><% if (index < 9 && index < item.credits.cast.length -1) { %>, <% } %>
+                        <%= actor.name %><% if (index < 9 && index < item.credits.cast.length - 1) { %>, <% } %>
                     <% }); %></p>
                 </div>
             <% } %>
@@ -118,7 +135,7 @@
 
   document.getElementById('play-button').addEventListener('click', function() {
     if (mediaType && tmdbId) {
-      const url = `https://vidsrc.xyz/embed/${mediaType === 'movie' ? 'movie' : 'tv'}?tmdb=${tmdbId}&ds_lang=ms`;
+        const url = `/player?mediaType=${mediaType}&tmdbId=${tmdbId}`;
       window.location.href = url;
     } else {
       console.error('Missing mediaType or tmdbId');

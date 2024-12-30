@@ -57,30 +57,35 @@ app.get('/search', async (req, res) => {
 });
 
 // Movie and Series Details Route (Combined)
-app.get('/detail/:mediaType/:id', async (req, res) => {
-  const { mediaType, id } = req.params;
+app.get('/detail/movie/:id', async (req, res) => {
   try {
-    let itemData;
-
-    if (mediaType === 'movie') {
-      const movieRes = await axios.get(
-        `https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`
-      );
-      itemData = movieRes.data;
-    } else if (mediaType === 'tv') {
-      const seriesRes = await axios.get(
-        `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`
-      );
-      itemData = seriesRes.data;
-    } else {
-      return res.render('error', { message: 'Invalid type specified.' });
-    }
-
-    res.render('detail', { item: itemData, mediaType });
+    const movieRes = await axios.get(
+      `https://api.themoviedb.org/3/movie/${req.params.id}?api_key=${TMDB_API_KEY}`
+    );
+    res.render('detail', { item: movieRes.data, type: 'movie' });
   } catch (error) {
-    console.error(`Error fetching ${mediaType} details:`, error.response?.data || error.message);
-    res.render('error', { message: `Error fetching ${mediaType} details.` });
+    console.error("Error fetching movie details:", error.response?.data || error.message);
+    res.render('error', { message: 'Error fetching movie details.' });
   }
+});
+
+app.get('/detail/series/:id', async (req, res) => {
+  try {
+    const seriesRes = await axios.get(
+      `https://api.themoviedb.org/3/tv/${req.params.id}?api_key=${TMDB_API_KEY}`
+    );
+    res.render('detail', { item: seriesRes.data, type: 'series' });
+  } catch (error) {
+    console.error("Error fetching series details:", error.response?.data || error.message);
+    res.render('error', { message: 'Error fetching series details.' });
+  }
+});
+
+app.get('/player', (req, res) => {
+  res.render('player', {
+      mediaType: req.query.mediaType,
+      tmdbId: req.query.tmdbId
+  });
 });
 
 // API Route for fetching Videos

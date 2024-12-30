@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="player-frame" src="" allowfullscreen></iframe>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const mediaType = urlParams.get('mediaType');
+        const tmdbId = urlParams.get('tmdbId');
+
+        // Check if mediaType and tmdbId are present
+        if (mediaType && tmdbId) {
+            const iframeSrc = `https://vidsrc.xyz/embed/${mediaType === 'movie' ? 'movie' : 'tv'}?tmdb=${tmdbId}&ds_lang=ms`;
+            document.getElementById('player-frame').src = iframeSrc;
+        } else {
+            console.error('Missing mediaType or tmdbId');
+        }
+    </script>
+</body>
+</html>
