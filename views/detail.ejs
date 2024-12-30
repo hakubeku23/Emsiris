@@ -1,26 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title><%= item.title || item.name %></title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Define focusable elements (buttons, links, etc.)
-            const focusableElements = [
-                document.getElementById('trailer-button'),
-                document.getElementById('play-button'),
-                document.getElementById('back-button')
-            ];
-    
-            // Initialize keynav to make these elements focusable and navigable
-            Keynav(focusableElements);
-    
-            // Optionally, focus on the first element when the page loads
-            focusableElements[0].focus();  // Focus on 'Watch Trailer' button initially
-        });
-    </script>    
-</head>
 <body>
     <h1>
     <div>
@@ -29,94 +6,40 @@
     </div>    
     </h1>
 
-      <div class="detail-container">
-    <img src="https://image.tmdb.org/t/p/w500/<%= item.poster_path || 'placeholder.jpg' %>" alt="<%= item.title || item.name || 'No title' %>" class="focusable">
-    <div class="detail-info">
-      <h1><%= item.title || item.name %> (<%= (item.release_date || item.first_air_date || '').substring(0, 4) %>)</h1>
-      <% if (item.runtime) { %><p><%= item.runtime %> min</p><% } %>
-      <% if (item.vote_average) { %><p>IMDb <span class="fa fa-star"></span> <%= item.vote_average %></p><% } %>
-      <% if (item.genres) { %>
-        <p>Genres: <%= item.genres.map(g => g.name).join(', ') %></p>
-      <% } %>
-      <p><%= item.overview || 'No overview available.' %></p>
-      <% const directors = item.credits?.crew?.filter(c => c.job === 'Director') || []; %>
-      <% if (directors.length) { %>
-        <p>Director(s): <%= directors.map(d => d.name).join(', ') %></p>
-      <% } %>
-      <% const cast = item.credits?.cast?.slice(0, 10) || []; %>
-      <% if (cast.length) { %>
-        <p>Cast: <%= cast.map(a => a.name).join(', ') %></p>
-      <% } %>
-      <button id="trailer-button" class="focusable">Watch Trailer</button>
-      <button id="play-button" class="focusable">Play</button>
+    <div class="detail-container">
+        <img src="https://image.tmdb.org/t/p/w500/<%= item.poster_path %>" alt="<%= item.title || item.name %>" class="focusable">
+        <div class="detail-info">
+            <h1><%= item.title || item.name %> (<%= (item.release_date || item.first_air_date || '').substring(0, 4) %>)</h1>
+            <% if (item.runtime) { %><p class="duration"><%= item.runtime %> min</p><% } %>
+            <% if (item.vote_average) { %><p class="rating">IMDb <span class="fa fa-star checked"></span> <%= item.vote_average %></p><% } %>
+            <% if (item.genres) { %>
+                <p class="genres">Genres: <% item.genres.forEach((genre, index) => { %>
+                    <%= genre.name %><% if (index < item.genres.length - 1) { %>, <% } %>
+                <% }); %></p>
+            <% } %>
+            <p class="overview"><%= item.overview %></p>
+
+            <% if (item.credits && item.credits.crew) { %>
+                <div class="crew-info">
+                    <% const directors = item.credits.crew.filter(person => person.job === 'Director'); %>
+                    <% if (directors.length > 0) { %>
+                        <p class="directors">Director(s): <% directors.forEach((director, index) => { %>
+                            <%= director.name %><% if (index < directors.length - 1) { %>, <% } %>
+                        <% }); %></p>
+                    <% } %>
+                </div>
+            <% } %>
+            <% if (item.credits && item.credits.cast) { %>
+                <div class="cast-info">
+                    <p class="cast">Cast: <% item.credits.cast.slice(0, 10).forEach((actor, index) => { %>
+                        <%= actor.name %><% if (index < 9 && index < item.credits.cast.length -1) { %>, <% } %>
+                    <% }); %></p>
+                </div>
+            <% } %>
+            
+            <!-- Trailer Button -->
+            <button id="trailer-button" class="trailer-button focusable">Watch Trailer</button>
+            <!-- Play Button -->
+            <button id="play-button" class="play-button focusable">Play</button>
+        </div>
     </div>
-  </div>
-
-    <script>
-        document.getElementById('trailer-button').addEventListener('click', async () => {
-            const itemId = "<%= item.id %>"; // Pass the current item's ID
-            const mediaType = "<%= item.title ? 'movie' : 'tv' %>"; // Determine if it's a movie or TV series
-    
-            try {
-                const response = await fetch(`/api/videos/${mediaType}/${itemId}`);
-                const data = await response.json();
-    
-                if (data && data.results.length > 0) {
-                    const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
-                    if (trailer) {
-                        const trailerUrl = `https://www.youtube.com/watch?v=${trailer.key}`;
-                        const deepLinkUrl = `vnd.youtube://watch?v=${trailer.key}`; // YouTube app deep link
-    
-                        // Check if the device is mobile and if it's an iPhone or Android device
-                        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                            // Attempt to open the YouTube app first
-                            window.location.href = deepLinkUrl;
-    
-                            // Fallback to browser if YouTube app is not installed
-                            setTimeout(() => {
-                                window.location.href = trailerUrl;
-                            }, 500); // Fallback after a short delay
-                        } else {
-                            // For PC, open in browser as usual
-                            window.open(trailerUrl, '_blank');
-                        }
-                    } else {
-                        alert('No trailer found.');
-                    }
-                } else {
-                    alert('No trailer found.');
-                }
-            } catch (error) {
-                console.error('Error fetching trailer:', error);
-                alert('Error fetching trailer.');
-            }
-        });
-    </script>
-    
-<script>
-    // Ensure mediaType and item.id are correctly passed into the template
-    const mediaType = "<%= item.title ? 'movie' : 'tv' %>";  // 'movie' or 'tv'
-  const tmdbId = '<%= item.id %>';  // tmdb_id for the current item
-
-  console.log('mediaType:', mediaType);  // Debugging line
-  console.log('tmdbId:', tmdbId);  // Debugging line
-
-  document.getElementById('play-button').addEventListener('click', function() {
-    if (mediaType && tmdbId) {
-      const url = `https://vidsrc.xyz/embed/${mediaType === 'movie' ? 'movie' : 'tv'}?tmdb=${tmdbId}&ds_lang=ms`;
-      window.location.href = url;
-    } else {
-      console.error('Missing mediaType or tmdbId');
-    }
-  });
-  </script>
-
-  <script>import Focusable from 'focusable';
-
-    const elements = document.querySelectorAll('.focusable'); // elements with a specific class
-    Focusable(elements);
-    </script>
-  
-  <script src="/js/nav_controller.js"></script>
-</body>
-</html>
