@@ -1,95 +1,105 @@
-const express = require("express");
-const axios = require("axios");
-const path = require("path");
-require("dotenv").config();
-
+require('dotenv').config();
+const express = require('express');
+const axios = require('axios');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;  // Use environment port for deployment (e.g., Vercel)
+
+app.set('view engine', 'ejs');
+app.use(express.static('public')); // Serve static files (CSS, JS)
+
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
-// Set EJS as the template engine
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-
-// Serve static files
-app.use(express.static(path.join(__dirname, "public")));
-
-// Home Route
-app.get("/", async (req, res) => {
+// Home Route: Trending Movies and Series
+app.get('/', async (req, res) => {
   try {
-    const trendingResponse = await axios.get(
-      `https://api.themoviedb.org/3/trending/all/week`,
-      { params: { api_key: TMDB_API_KEY } }
+    const trendingRes = await axios.get(
+      `https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`
     );
-    const trendingItems = trendingResponse.data.results;
-    res.render("index", { trendingItems });
+
+    const movies = trendingRes.data.results.filter(
+      (item) => item.media_type === 'movie' && item.title && item.poster_path
+    );
+    const series = trendingRes.data.results.filter(
+      (item) => item.media_type === 'tv' && item.name && item.poster_path
+    );
+
+    res.render('index', { movies, series });
   } catch (error) {
-    console.error("Error fetching trending items:", error.response?.data || error.message);
-    res.status(500).send("Error loading homepage.");
+    console.error("Error fetching trending data:", error.response?.data || error.message);
+    res.render('error', { message: 'Error fetching trending data.' });
   }
 });
 
 // Search Route
-app.get("/search", async (req, res) => {
-  const query = req.query.q;
+app.get('/search', async (req, res) => {
+  const query = req.query.query; // Get the search term from the query string
   if (!query) {
-    return res.redirect("/");
+    return res.render('search', { query: '', movies: [], series: [] }); // Handle empty queries
   }
 
   try {
-    const searchResponse = await axios.get(
-      `https://api.themoviedb.org/3/search/multi`,
-      { params: { api_key: TMDB_API_KEY, query } }
+    const searchRes = await axios.get(
+      `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
     );
-    const results = searchResponse.data.results;
-    res.render("search", { results, query });
+
+    const movies = searchRes.data.results.filter(
+      (item) => item.media_type === 'movie' && item.title && item.poster_path
+    );
+    const series = searchRes.data.results.filter(
+      (item) => item.media_type === 'tv' && item.name && item.poster_path
+    );
+
+    res.render('search', { query, movies, series });
   } catch (error) {
-    console.error("Error performing search:", error.response?.data || error.message);
-    res.status(500).send("Error performing search.");
+    console.error("Error during search:", error.response?.data || error.message);
+    res.render('search', { query, movies: [], series: [] });
   }
 });
 
-// Detail Page Route
-app.get("/item/:mediaType/:id", async (req, res) => {
+// Movie and Series Details Route (Combined)
+app.get('/detail/:mediaType/:id', async (req, res) => {
   const { mediaType, id } = req.params;
-
   try {
-    const itemResponse = await axios.get(
-      `https://api.themoviedb.org/3/${mediaType}/${id}`,
-      {
-        params: { api_key: TMDB_API_KEY, append_to_response: "credits,videos" },
-      }
-    );
-    const item = itemResponse.data;
-    res.render("detail", { item });
+    let itemData;
+
+    // Log request parameters to check
+    console.log(`Fetching details for: ${mediaType} with ID: ${id}`);
+
+    if (mediaType === 'movie') {
+      const movieRes = await axios.get(
+        `https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`
+      );
+      itemData = movieRes.data;
+      console.log("Movie Data:", itemData); // Log movie data for debugging
+    } else if (mediaType === 'tv') {
+      const seriesRes = await axios.get(
+        `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`
+      );
+      itemData = seriesRes.data;
+      console.log("TV Series Data:", itemData); // Log series data for debugging
+    } else {
+      return res.render('error', { message: 'Invalid type specified.' });
+    }
+
+    if (!itemData) {
+      return res.render('error', { message: `No data found for ${mediaType}.` });
+    }
+
+    res.render('detail', { item: itemData, mediaType });
   } catch (error) {
-    console.error("Error fetching item details:", error.response?.data || error.message);
-    res.status(500).send("Error loading details.");
+    console.error(`Error fetching ${mediaType} details:`, error.response?.data || error.message);
+    res.render('error', { message: `Error fetching ${mediaType} details.` });
   }
 });
 
-// API Route for Trailers
-app.get("/api/videos/:mediaType/:id", async (req, res) => {
-  const { mediaType, id } = req.params;
-
-  try {
-    const response = await axios.get(
-      `https://api.themoviedb.org/3/${mediaType}/${id}/videos`,
-      { params: { api_key: TMDB_API_KEY } }
-    );
-    res.json(response.data);
-  } catch (error) {
-    console.error("Error fetching videos:", error.response?.data || error.message);
-    res.status(500).json({ error: "Error fetching videos." });
-  }
+// Error Page Route
+app.get('/error', (req, res) => {
+  res.render('error', { message: 'An unknown error occurred.' });
 });
 
-// 404 Handler
-app.use((req, res) => {
-  res.status(404).render("404", { message: "Page not found." });
+// Start the Server
+app.listen(port, () => {
+  console.log(`Server listening on http://localhost:${port}`);
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+server.js
