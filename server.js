@@ -22,7 +22,7 @@ app.get("/", async (req, res) => {
       { params: { api_key: TMDB_API_KEY } }
     );
     const trendingItems = trendingResponse.data.results;
-    res.render("home", { trendingItems });
+    res.render("index", { trendingItems });
   } catch (error) {
     console.error("Error fetching trending items:", error.response?.data || error.message);
     res.status(500).send("Error loading homepage.");
